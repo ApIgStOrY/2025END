@@ -1,0 +1,72 @@
+/* =========================================
+   基本的 HTML 重置 (Reset)
+========================================= */
+html, body, div, span, h1, h2, p, a, img, ol, ul, li, fieldset, form, label, legend, table, tbody, tfoot, thead, tr, th, td, article, aside, canvas, footer, header, menu, nav, section, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}
+body {
+  background-color: #333; /* 深色背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* =========================================
+   轉盤區域樣式 (核心修改區)
+========================================= */
+
+/* 1. 外層容器：必須設定為固定大小，作為定位基準 */
+.turntable-bg {
+  position: relative;
+  width: 550px;  /* 寬度與 Canvas 一致 */
+  height: 550px; /* 高度與 Canvas 一致 */
+  position: relative;
+  margin: 0 auto;
+}
+
+
+/* 2. 轉盤畫布：填滿容器 */
+#wheelCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: #fff;
+  border-radius: 50%;
+  border: 8px solid #FFD700; /* 金色外框 */
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  box-sizing: border-box; /* 確保邊框不會撐大容器 */
+}
+
+/* 3. 指針容器：負責絕對置中 */
+.pointer {
+  position: absolute;
+  /* 這裡不需要設寬高，讓裡面的圖片決定 */
+  left: 50%;
+  top: 50%;
+  /* 這是讓容器幾何中心完美對齊的關鍵 */
+  transform: translate(-50%, -50%); 
+  z-index: 10;
+  cursor: pointer;
+  /* border: 1px solid blue; 測試時可以打開這個藍框看看容器在哪 */
+}
+
+/* 4. 指針圖片：負責視覺微調 (關鍵！) */
+.pointer img {
+  display: block;
+  width: 120px; /* 在這裡調整指針整體大小 */
+  height: auto;
+
+  /* =========== 手動校正區 =========== */
+  /* 因為你的指針尖端偏上，所以我們要用負的 margin-top 把它往上拉 */
+  /* 試著調整這個數字，直到尖端對準紅點 */
+  margin-top: -250px;  /* <--- 調整這個數字！試試 -20px, -30px */
+  margin-left: -200px;   /* 如果左右沒對齊，調整這裡 */
+  /* ================================= */
+}
