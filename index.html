@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <title>2025尾牙轉轉樂</title>
+    
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/awardRotate.js"></script>
+
+    <style>
+        body {
+            background-color: #333; /* 深色背景更顯眼 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+
+        .turntable-bg {
+            position: relative;
+            width: 550px;
+            height: 550px;
+        }
+
+        /* 指針設定 */
+        .pointer {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* 完美置中 */
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .pointer img {
+            width: 100%;
+            display: block;
+        }
+
+        /* 轉盤畫布 */
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 50%;
+            border: 8px solid #FFF; /* 外框 */
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            // ==========================================
+            // 1. 獎項清單 (你可以隨意增加或減少)
+            // ==========================================
+            var prizes = [
+                // 正常色
+                { text: '80000', color: '#E53935', textColor: '#fff' },
+                { text: '16800', color: '#FBC02D', textColor: '#fff' },
+                { text: '10000', color: '#1E88E5', textColor: '#fff' },
+                { text: '8800', color: '#43A047', textColor: '#FFF' },
+                { text: '6600', color: '#8E24AA', textColor: '#fff' },
+                { text: '加碼 X2', color: '#E53935', textColor: '#fff' },
+                { text: '12000', color: '#FBC02D', textColor: '#fff' },
+                { text: '9000', color: '#1E88E5', textColor: '#fff' },
+                { text: '8800', color: '#43A047', textColor: '#fff' },
+                { text: '5000', color: '#8E24AA', textColor: '#fff' }
+
+                // 正常色 正紅 皇家藍 亮黃 草綠 紫色
+                // { text: '20000', color: '#F44336', textColor: '#fff' },
+                // { text: '16800', color: '#1E88E5', textColor: '#fff' },
+                // { text: '10000', color: '#FFEB3B', textColor: '#000' },
+                // { text: '8800', color: '#4CAF50', textColor: '#FFF' },
+                // { text: '6600', color: '#9C27B0', textColor: '#fff' },
+                // { text: '加碼 X2', color: '#F44336', textColor: '#fff' },
+                // { text: '12000', color: '#1E88E5', textColor: '#FFF' },
+                // { text: '9000', color: '#FFEB3B', textColor: '#000' },
+                // { text: '8800', color: '#4CAF50', textColor: '#fff' },
+                // { text: '5000', color: '#9C27B0', textColor: '#fff' }
+
+                // 科技色
+                // { text: '20000', color: '#8E24AA', textColor: '#fff' },
+                // { text: '16800', color: '#00B0FF', textColor: '#fff' },
+                // { text: '10000', color: '#FF4081', textColor: '#fff' },
+                // { text: '8800', color: '#FFEB3B', textColor: '#000' },
+                // { text: '6600', color: '#111111', textColor: '#fff' },
+                // { text: '加碼 X2', color: '#8E24AA', textColor: '#fff' },
+                // { text: '12000', color: '#00B0FF', textColor: '#FFF' },
+                // { text: '9000', color: '#FF4081', textColor: '#fff' },
+                // { text: '8800', color: '#FFEB3B', textColor: '#000' },
+                // { text: '5000', color: '#111111', textColor: '#fff' }
+
+                // 糖果色
+                // { text: '20000', color: '#FF4081', textColor: '#fff' },
+                // { text: '16800', color: '#FF9800', textColor: '#fff' },
+                // { text: '10000', color: '#FFEB3B', textColor: '#000' },
+                // { text: '8800', color: '#00E676', textColor: '#FFF' },
+                // { text: '6600', color: '#29B6F6', textColor: '#fff' },
+                // { text: '加碼 X2', color: '#FF4081', textColor: '#fff' },
+                // { text: '12000', color: '#FF9800', textColor: '#FFF' },
+                // { text: '9000', color: '#FFEB3B', textColor: '#000' },
+                // { text: '8800', color: '#00E676', textColor: '#fff' },
+                // { text: '5000', color: '#29B6F6', textColor: '#fff' }
+
+                // 賭場色
+                // { text: '20000', color: '#8B1D18', textColor: '#fff' },
+                // { text: '16800', color: '#1B5E20', textColor: '#fff' },
+                // { text: '10000', color: '#0D47A1', textColor: '#fff' },
+                // { text: '8800', color: '#D4AF37', textColor: '#000' },
+                // { text: '6600', color: '#1C1C1C', textColor: '#fff' },
+                // { text: '加碼 X2', color: '#8B1D18', textColor: '#fff' },
+                // { text: '12000', color: '#1B5E20', textColor: '#FFF' },
+                // { text: '9000', color: '#0D47A1', textColor: '#fff' },
+                // { text: '8800', color: '#D4AF37', textColor: '#000' },
+                // { text: '5000', color: '#1C1C1C', textColor: '#fff' }
+
+
+
+            ];
+
+            var canvas = document.getElementById('wheelCanvas');
+            var ctx = canvas.getContext('2d');
+            var bRotate = false;
+
+            // ==========================================
+            // 2. 自動繪製轉盤 (優化版：確保文字垂直且居中)
+            // ==========================================
+            function drawWheel() {
+                var len = prizes.length;
+                var arc = Math.PI / (len / 2); // 每個獎項的弧度
+                
+                ctx.clearRect(0, 0, 500, 500); // 清除畫布
+                ctx.strokeStyle = "#FFFFFF";
+
+                for (var i = 0; i < len; i++) {
+                    // 計算起始角度 (扣除 90 度，讓第一個獎項在正上方)
+                    var angle = i * arc - Math.PI / 2;
+                    
+                    ctx.fillStyle = prizes[i].color;
+                    ctx.beginPath();
+                    ctx.moveTo(250, 250);
+                    ctx.arc(250, 250, 250, angle, angle + arc, false);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 繪製文字
+                    ctx.save();
+                    ctx.fillStyle = prizes[i].textColor;
+                    ctx.translate(250, 250);
+                    ctx.rotate(angle + arc / 2); // 旋轉到區塊中間
+                    ctx.textAlign = "right";
+                    ctx.font = "bold 26px Microsoft JhengHei";
+                    ctx.fillText(prizes[i].text, 230, 10); // 10 是垂直微調
+                    ctx.restore();
+                }
+            }
+
+            drawWheel();
+
+            // ==========================================
+            // 3. 旋轉邏輯 (修正中獎角度計算)
+            // ==========================================
+            $('.pointer').click(function () {
+                if (bRotate) return;
+                
+                var audio = new Audio("BINGO_MIX.mp3");
+                audio.play().catch(e => console.log("音效播放被攔截"));
+
+                bRotate = true;
+
+                // 隨機選一個獎項索引
+                var item = Math.floor(Math.random() * prizes.length);
+                
+                // 計算角度：
+                // 每個區塊度數 = 360 / 獎項數
+                var step = 360 / prizes.length;
+                // 目標角度 = 360 - (中獎索引 * 每個區塊度數)
+                // 注意：這裡不加額外的偏移，因為 drawWheel 已經把第一個校正到頂部了
+                var angles = 360 - (item * step);
+
+                $('#wheelCanvas').stopRotate();
+                $('#wheelCanvas').rotate({
+                    angle: 0,
+                    animateTo: angles + 1800, // 轉 5 圈後停下
+                    duration: 8000,
+                    callback: function () {
+                        alert('🎉 恭喜您獲得：' + prizes[item].text);
+                        bRotate = false;
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="turntable-bg">
+    <div class="pointer"><img src="images/pointer.png"></div>
+    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    </div>
+</body>
+</html>
